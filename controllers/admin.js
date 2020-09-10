@@ -131,7 +131,7 @@ exports.forgotPassword = (req, res, next) => {
                     subject: 'Password Reset - Isotter',
                     html: `<p>こちらはIsotterです。パスワードのリセットを受付けました。</p>
                     <p>下記のURLからIsotterのパスワードの再設定をお願いします。<br>
-                    <a href="https://isotter.herokuapp.com/reset-password/${token}">https://isotter.herokuapp.com/reset-password/${token}</a></p>`
+                    <a href="https://isotter.netlify.app/reset-password/${token}">https://isotter.netlify.app/reset-password/${token}</a></p>`
                 })
             })
             .then(result =>{
