@@ -131,7 +131,7 @@ exports.forgotPassword = (req, res, next) => {
                     subject: 'Password Reset - Isotter',
                     html: `<p>こちらはIsotterです。パスワードのリセットを受付けました。</p>
                     <p>下記のURLからIsotterのパスワードの再設定をお願いします。<br>
-                    <a href="https://isotter.netlify.app/reset-password/${token}">https://isotter.netlify.app/reset-password/${token}</a></p>`
+                    <a href="${process.env.FRONT_END_URL}/reset-password/${token}">${process.env.FRONT_END_URL}/reset-password/${token}</a></p>`
                 })
             })
             .then(result =>{
@@ -205,43 +205,14 @@ exports.showUserStatus = async (req, res, next) => {
 
 exports.updateUserStatus = async (req, res, next) => {
     try{
-        const userId = req.body._id;
-        const userName = req.body.userName;
-        const email = req.body.email;
-        const thumb = req.file;
-        const password = req.body.password;
-        const passwordConfirm = req.body.passwordConfirm;
-        const fruit = req.body.fruit;
+        const userId = req.body.formData._id;
+        const userName = req.body.formData.userName;
+        const email = req.body.formData.email;
+        // let thumb;
+        const password = req.body.formData.password;
+        // const passwordConfirm = req.body.formData.passwordConfirm;
+        const fruit = req.body.formData.fruit;
 
-        const hashedPassword = await bcrypt.hash(password, 12);
-        
-        // const isUserNameExists = await User.findOne({userName: newUser.userName});
-        // if(oldUser._id !== newUser._id){
-        //     const error = new Error('このユーザの情報を更新する権限がありません')
-        //     error.status = 403;
-        //     throw error;
-        // }else if(
-        //     oldUser.userName===newUser.userName && 
-        //     oldUser.email===newUser.email && 
-        //     oldUser.thumb===newUser.thumb && 
-        //     oldUser.password===newUser.password && 
-        //     oldUser.fruit===newUser.fruit ){
-        //     const error = new Error('更新箇所が見つかりません')
-        //     error.status = 404;
-        //     throw error;
-        // }else if(oldUser.userName !== newUser.userName && isUserNameExists){
-        //     const error = new Error('すでにそのユーザ名は使われています')
-        //     error.status = 422;
-        //     throw error;
-        // }
-        console.log(thumb);
-
-        if(!thumb){
-            const error = new Error('画像がありません')
-            error.status = 422;
-            throw error;
-        }
-        
         const userDoc = await User.findById(userId);
         if(!userDoc){
             const error = new Error('ユーザーがいません')
@@ -249,18 +220,31 @@ exports.updateUserStatus = async (req, res, next) => {
             throw error;
         }
 
-        const newUser = {
+        let newPassword;
+        if(password){
+            newPassword = await bcrypt.hash(password, 12);
+        } else {
+            newPassword = userDoc.password
+        }
+        
+        if( req.file ){
+            thumb = req.file.thumb;
+        } else {
+            thumb = userDoc.thumb;
+        }
+
+        const modifiedUser = {
             _id: userId,
             userName: userName,
             email: email,
-            thumb: thumb.path,
-            password: hashedPassword,
+            thumb: thumb,
+            password: newPassword,
             fruit: fruit
         }
         
-        userDoc.overwrite(newUser);
-        const newUserDoc = await userDoc.save();
-        if(!newUserDoc){
+        userDoc.overwrite(modifiedUser);
+        const modifiedUserDoc = await userDoc.save();
+        if(!modifiedUserDoc){
             const error = new Error('ユーザー情報を書き換えできなかったかも')
             error.status = 500;
             throw error;
@@ -268,7 +252,7 @@ exports.updateUserStatus = async (req, res, next) => {
         console.log('ユーザ情報更新完了')
         res.status(201).json({
             message: 'update succeeded!',
-            user: newUserDoc
+            user: modifiedUserDoc
         })
     } catch(err){
         next(err);
