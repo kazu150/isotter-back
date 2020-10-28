@@ -55,7 +55,7 @@ exports.createPost = async (req, res, next) => {
 }
 
 exports.deletePost = (req, res, next) => {
-    const postId = req.body.postId;
+    const postId = req.params.postId;
     Post.findById(postId)
         .then(post => {
             if(!post){

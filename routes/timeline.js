@@ -15,6 +15,6 @@ router.post(
     ],
     isAuth, 
     timelineController.createPost);
-router.delete('/post', isAuth, timelineController.deletePost);
+router.delete('/post/:postId', isAuth, timelineController.deletePost);
 
 module.exports = router;
