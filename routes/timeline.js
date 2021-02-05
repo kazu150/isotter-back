@@ -1,5 +1,5 @@
 const express = require('express');
-const { body } = require('express-validator/check')
+const { body } = require('express-validator')
 
 const timelineController = require('../controllers/timeline');
 const isAuth = require('../middleware/is-auth');
