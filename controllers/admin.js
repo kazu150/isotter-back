@@ -205,14 +205,19 @@ exports.showUserStatus = async (req, res, next) => {
 
 exports.updateUserStatus = async (req, res, next) => {
     try{
-        console.log(req.body, 'on controller');
-        console.log(req.file, 'file on controller');
+        const errs = validationResult(req);
+        if(!errs.isEmpty()){
+            const errorMessage = errs.errors[0].msg;
+            const error = new Error(errorMessage)
+            error.status = 422;
+            throw error;
+        }
+
         const userId = req.body._id;
         const userName = req.body.userName;
         const email = req.body.email;
         let thumb;
         const password = req.body.password;
-        // const passwordConfirm = req.body.passwordConfirm;
         const fruit = req.body.fruit;
 
         const userDoc = await User.findById(userId);
@@ -230,13 +235,8 @@ exports.updateUserStatus = async (req, res, next) => {
             newPassword = userDoc.password
         }
         
-        console.log(req.file, "req.fileだよ")
-        console.log(req.file.thumb, "req.file.thumbだよ")
-
         if( req.file ){
-            console.log(1)
             thumb = req.file.path;
-            console.log(2)
         } else {
             thumb = userDoc.thumb;
         }

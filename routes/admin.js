@@ -17,6 +17,7 @@ router.put(
             .withMessage('条件に合うuserNameを登録してください')
             .custom((value, {req}) => {
                 return User.findOne({userName: value}).then(userDoc => {
+                    // console.log(Promise.reject('このuserNameはすでに使われています'))
                     if(userDoc){
                         return Promise.reject('このuserNameはすでに使われています')
                     }
@@ -101,10 +102,9 @@ router.patch(
     [
         body('_id')
             .custom((value, {req}) => {
-                if( req.userId === value ){
-                    const error = new Error('このユーザの情報を更新する権限がありません')
-                    error.status = 403;
-                    throw error;
+                // req.userIdはis-authにてJWTから検出したuserId
+                if (value !== req.userId){
+                    throw new Error('このユーザの情報を更新する権限がありません')
                 }
                 return true;
             }),
@@ -114,7 +114,7 @@ router.patch(
             .withMessage('条件に合うuserNameを登録してください')
             .custom((value, {req}) => {
                 return User.findOne({userName: value}).then(userDoc => {
-                    if(userDoc && userDoc._id !== req.userId){
+                    if(userDoc && userDoc._id !== req.body._id){
                         return Promise.reject('このuserNameはすでに使われています')
                     }
                 })
@@ -125,8 +125,9 @@ router.patch(
             .isEmail()
             .withMessage('条件に合うemailを登録してください')
             .custom((value, {req}) => {
+                console.log('3')
                 return User.findOne({email: value}).then(userDoc => {
-                    if(userDoc && userDoc._id !== req.userId){
+                    if(userDoc && userDoc._id !== req.body._id){
                         return Promise.reject('このemailはすでに使われています')
                     }
                 })
@@ -136,6 +137,7 @@ router.patch(
             .isAlphanumeric(),
         body('confirmPassword')
             .custom((value, { req }) => {
+                console.log('4')
                 if(value !== req.body.password){
                     throw new Error('パスワードが間違っています')
                 }
