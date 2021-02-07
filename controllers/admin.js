@@ -30,7 +30,7 @@ exports.signup = async (req, res, next) => {
         const userName = req.body.userName;
         const email = req.body.email
         const password = req.body.password;
-        const thumb = req.body.thumb;
+        // const thumb = req.body.thumb;
 
         const hashedPassword = await bcrypt.hash(password, 12)
 
@@ -68,7 +68,6 @@ exports.signup = async (req, res, next) => {
 
 // loginとuserStatusのcontrollerで、かなりやっていることがかぶっているので、リファクタの方法がわかったらしたい
 exports.login = async (req,res,next) => {
-
     try{
         const errs = validationResult(req);
         if(!errs.isEmpty()){
@@ -205,13 +204,20 @@ exports.showUserStatus = async (req, res, next) => {
 
 exports.updateUserStatus = async (req, res, next) => {
     try{
-        const userId = req.body.formData._id;
-        const userName = req.body.formData.userName;
-        const email = req.body.formData.email;
-        // let thumb;
-        const password = req.body.formData.password;
-        // const passwordConfirm = req.body.formData.passwordConfirm;
-        const fruit = req.body.formData.fruit;
+        const errs = validationResult(req);
+        if(!errs.isEmpty()){
+            const errorMessage = errs.errors[0].msg;
+            const error = new Error(errorMessage)
+            error.status = 422;
+            throw error;
+        }
+
+        const userId = req.body._id;
+        const userName = req.body.userName;
+        const email = req.body.email;
+        let thumb;
+        const password = req.body.password;
+        const fruit = req.body.fruit;
 
         const userDoc = await User.findById(userId);
         if(!userDoc){
@@ -219,6 +225,7 @@ exports.updateUserStatus = async (req, res, next) => {
             error.status = 404;
             throw error;
         }
+
 
         let newPassword;
         if(password){
@@ -228,7 +235,7 @@ exports.updateUserStatus = async (req, res, next) => {
         }
         
         if( req.file ){
-            thumb = req.file.thumb;
+            thumb = req.file.path;
         } else {
             thumb = userDoc.thumb;
         }
@@ -249,7 +256,7 @@ exports.updateUserStatus = async (req, res, next) => {
             error.status = 500;
             throw error;
         }
-        console.log('ユーザ情報更新完了')
+        console.log('ユーザ情報更新が完了')
         res.status(201).json({
             message: 'update succeeded!',
             user: modifiedUserDoc

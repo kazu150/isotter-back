@@ -12,7 +12,7 @@ const morgan = require('morgan');
 const timelineRoutes = require('./routes/timeline');
 const adminRoutes = require('./routes/admin');
 
-const app = express();
+const app = express(); 
 
 const accessLogStream = fs.createWriteStream(
     path.join(__dirname, 'access.log'),
@@ -43,9 +43,10 @@ const fileFilter = (req, file, cb) => {
         cb(null, false);
     }
 }
-
-// app.use(bodyParser.urlencoded()); ←これはjson以外(form)のときに使う
+ 
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
 app.use(multer({ storage: fileStorage, fileFilter: fileFilter }).single('thumb'));
 app.use('/images', express.static(path.join(__dirname, 'images')));
 

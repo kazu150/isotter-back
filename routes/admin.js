@@ -101,10 +101,9 @@ router.patch(
     [
         body('_id')
             .custom((value, {req}) => {
-                if( req.userId === value ){
-                    const error = new Error('このユーザの情報を更新する権限がありません')
-                    error.status = 403;
-                    throw error;
+                // req.userIdはis-authにてJWTから検出したuserId
+                if (value !== req.userId){
+                    throw new Error('このユーザの情報を更新する権限がありません')
                 }
                 return true;
             }),
@@ -114,7 +113,7 @@ router.patch(
             .withMessage('条件に合うuserNameを登録してください')
             .custom((value, {req}) => {
                 return User.findOne({userName: value}).then(userDoc => {
-                    if(userDoc && userDoc._id !== req.userId){
+                    if(userDoc && userDoc._id.toString() !== req.userId){
                         return Promise.reject('このuserNameはすでに使われています')
                     }
                 })
@@ -126,18 +125,20 @@ router.patch(
             .withMessage('条件に合うemailを登録してください')
             .custom((value, {req}) => {
                 return User.findOne({email: value}).then(userDoc => {
-                    if(userDoc && userDoc._id !== req.userId){
+                    if(userDoc && userDoc._id.toString() !== req.userId){
                         return Promise.reject('このemailはすでに使われています')
                     }
                 })
             }),
         body('password', 'パスワードは6文字以上の英数字を入力')
-            .isLength(0, {min: 6})
+            // undefinedをエラーとして扱わない
+            .optional({nullable:true})
+            .isLength({min: 6})
             .isAlphanumeric(),
-        body('confirmPassword')
+        body('passwordConfirm')
             .custom((value, { req }) => {
-                if(value !== req.body.password){
-                    throw new Error('パスワードが間違っています')
+                if(value != req.body.password){
+                    throw new Error('確認用パスワードが間違っています')
                 }
                 return true
             }),
