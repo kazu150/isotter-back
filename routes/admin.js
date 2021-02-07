@@ -17,7 +17,6 @@ router.put(
             .withMessage('条件に合うuserNameを登録してください')
             .custom((value, {req}) => {
                 return User.findOne({userName: value}).then(userDoc => {
-                    // console.log(Promise.reject('このuserNameはすでに使われています'))
                     if(userDoc){
                         return Promise.reject('このuserNameはすでに使われています')
                     }
@@ -114,7 +113,7 @@ router.patch(
             .withMessage('条件に合うuserNameを登録してください')
             .custom((value, {req}) => {
                 return User.findOne({userName: value}).then(userDoc => {
-                    if(userDoc && userDoc._id !== req.body._id){
+                    if(userDoc && userDoc._id.toString() !== req.userId){
                         return Promise.reject('このuserNameはすでに使われています')
                     }
                 })
@@ -125,21 +124,21 @@ router.patch(
             .isEmail()
             .withMessage('条件に合うemailを登録してください')
             .custom((value, {req}) => {
-                console.log('3')
                 return User.findOne({email: value}).then(userDoc => {
-                    if(userDoc && userDoc._id !== req.body._id){
+                    if(userDoc && userDoc._id.toString() !== req.userId){
                         return Promise.reject('このemailはすでに使われています')
                     }
                 })
             }),
         body('password', 'パスワードは6文字以上の英数字を入力')
-            .isLength(0, {min: 6})
+            // undefinedをエラーとして扱わない
+            .optional({nullable:true})
+            .isLength({min: 6})
             .isAlphanumeric(),
-        body('confirmPassword')
+        body('passwordConfirm')
             .custom((value, { req }) => {
-                console.log('4')
-                if(value !== req.body.password){
-                    throw new Error('パスワードが間違っています')
+                if(value != req.body.password){
+                    throw new Error('確認用パスワードが間違っています')
                 }
                 return true
             }),

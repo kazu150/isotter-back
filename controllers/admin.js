@@ -68,7 +68,6 @@ exports.signup = async (req, res, next) => {
 
 // loginとuserStatusのcontrollerで、かなりやっていることがかぶっているので、リファクタの方法がわかったらしたい
 exports.login = async (req,res,next) => {
-    console.log(req.user)
     try{
         const errs = validationResult(req);
         if(!errs.isEmpty()){
