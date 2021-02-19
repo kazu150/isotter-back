@@ -58,7 +58,8 @@ exports.signup = async (req, res, next) => {
             from: 'Isotter<noreply@isotter.com>',
             subject: 'Welcome to Isotter!',
             html: `<h1>${userName}さん、Isotterへようこそ！</h1>
-            <p>Isotterではツイートを投稿したり、他の人のツイートを見たりすることができます！！<br>（残念ながら、今の所リツイートやリプライの機能はありません！笑）</p>`
+            <p>Isotterではツイートを投稿したり、他の人のツイートを見たりすることができます！！<br>
+            （残念ながら、今の所リツイートやリプライの機能はありません！笑）</p>`
         })
         
     } catch(err){
@@ -128,9 +129,13 @@ exports.forgotPassword = (req, res, next) => {
                     to: req.user.email,
                     from: 'Isotter<noreply@isotter.com>',
                     subject: 'Password Reset - Isotter',
-                    html: `<p>こちらはIsotterです。パスワードのリセットを受付けました。</p>
+                    html: 
+                    `<p>こちらはIsotterです。パスワードのリセットを受付けました。</p>
                     <p>下記のURLからIsotterのパスワードの再設定をお願いします。<br>
-                    <a href="${process.env.FRONT_END_URL}/reset-password/${token}">${process.env.FRONT_END_URL}/reset-password/${token}</a></p>`
+                        <a href="${process.env.FRONT_END_URL}/reset-password/${token}">
+                            ${process.env.FRONT_END_URL}/reset-password/${token}
+                        </a>
+                    </p>`
                 })
             })
             .then(result =>{
@@ -189,7 +194,7 @@ exports.showUserStatus = async (req, res, next) => {
         const userName = req.params.userName;
         const user = await User.find({userName: userName});
         if(!user){
-            const error = new Error('このユーザーはいないかも')
+            const error = new Error('このユーザー名は登録されていません')
             error.status = 500;
             throw error;
         }
@@ -221,11 +226,10 @@ exports.updateUserStatus = async (req, res, next) => {
 
         const userDoc = await User.findById(userId);
         if(!userDoc){
-            const error = new Error('ユーザーがいません')
+            const error = new Error('このユーザー名は登録されていません')
             error.status = 404;
             throw error;
         }
-
 
         let newPassword;
         if(password){
@@ -252,7 +256,7 @@ exports.updateUserStatus = async (req, res, next) => {
         userDoc.overwrite(modifiedUser);
         const modifiedUserDoc = await userDoc.save();
         if(!modifiedUserDoc){
-            const error = new Error('ユーザー情報を書き換えできなかったかも')
+            const error = new Error('ユーザー情報を書き換えできなかったようです')
             error.status = 500;
             throw error;
         }
